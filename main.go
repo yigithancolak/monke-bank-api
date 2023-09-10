@@ -10,10 +10,16 @@ import (
 	_ "github.com/joho/godotenv/autoload"
 	"github.com/yigithancolak/monke-bank-api/api"
 	db "github.com/yigithancolak/monke-bank-api/db/sqlc"
+	"github.com/yigithancolak/monke-bank-api/util"
 )
 
 func main() {
-	dbpool, err := pgxpool.New(context.Background(), os.Getenv("POSTGRES_URL"))
+	config, err := util.LoadConfig(".")
+	if err != nil {
+		log.Fatal("cannot load config")
+	}
+
+	dbpool, err := pgxpool.New(context.Background(), config.PostgresURL)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "Unable to create connection pool: %v\n", err)
 		os.Exit(1)
@@ -22,11 +28,11 @@ func main() {
 
 	store := db.New(dbpool)
 
-	runGinServer(*store)
+	runGinServer(config, *store)
 }
 
-func runGinServer(store db.Queries) {
-	server, err := api.NewServer(store)
+func runGinServer(config util.Config, store db.Queries) {
+	server, err := api.NewServer(config, store)
 	if err != nil {
 		log.Fatal("cannot create server")
 	}

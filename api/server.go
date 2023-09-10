@@ -3,11 +3,13 @@ package api
 import (
 	"github.com/gin-gonic/gin"
 	db "github.com/yigithancolak/monke-bank-api/db/sqlc"
+	"github.com/yigithancolak/monke-bank-api/util"
 )
 
 type Server struct {
 	store  db.Queries
 	router *gin.Engine
+	config util.Config
 }
 
 func errorResponse(err error) gin.H {
@@ -24,10 +26,11 @@ func (server *Server) setupRouter() {
 	server.router = router
 }
 
-func NewServer(store db.Queries) (*Server, error) {
+func NewServer(config util.Config, store db.Queries) (*Server, error) {
 
 	server := &Server{
-		store: store,
+		store:  store,
+		config: config,
 	}
 
 	server.setupRouter()

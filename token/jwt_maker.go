@@ -32,3 +32,25 @@ func (maker JWTMaker) CreateToken(email string, duration time.Duration) (string,
 	token, err := jwtToken.SignedString([]byte(maker.secretKey))
 	return token, payload, err
 }
+
+func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
+	keyByteConverter := func(token *jwt.Token) (interface{}, error) {
+		_, ok := token.Method.(*jwt.SigningMethodHMAC)
+		if !ok {
+			return nil, ErrInvalidToken
+		}
+		return []byte(maker.secretKey), nil
+	}
+
+	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyByteConverter)
+	if err != nil {
+		return nil, ErrInvalidToken
+	}
+
+	payload, ok := jwtToken.Claims.(*Payload)
+	if !ok {
+		return nil, ErrInvalidToken
+	}
+
+	return payload, nil
+}
