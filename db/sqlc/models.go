@@ -5,17 +5,18 @@
 package db
 
 import (
+	"time"
+
 	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
 type Account struct {
 	ID           uuid.UUID          `json:"id"`
-	Owner        string             `json:"owner"`
+	Owner        uuid.UUID          `json:"owner"`
 	Balance      int32              `json:"balance"`
 	CurrencyCode string             `json:"currency_code"`
 	CreatedAt    pgtype.Timestamptz `json:"created_at"`
-	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
 }
 
 type Currency struct {
@@ -37,4 +38,12 @@ type Transfer struct {
 	ToAccountID   uuid.UUID          `json:"to_account_id"`
 	Amount        int32              `json:"amount"`
 	CreatedAt     pgtype.Timestamptz `json:"created_at"`
+}
+
+type User struct {
+	ID        uuid.UUID `json:"id"`
+	Email     string    `json:"email"`
+	Password  string    `json:"password"`
+	FullName  string    `json:"full_name"`
+	CreatedAt time.Time `json:"created_at"`
 }

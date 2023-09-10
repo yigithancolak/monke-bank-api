@@ -9,21 +9,19 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const createAccount = `-- name: CreateAccount :one
-INSERT INTO accounts (id, owner, balance, currency_code, updated_at)
-VALUES ($1, $2, $3, $4, $5)
-RETURNING id, owner, balance, currency_code, created_at, updated_at
+INSERT INTO accounts (id, owner, balance, currency_code)
+VALUES ($1, $2, $3, $4)
+RETURNING id, owner, balance, currency_code, created_at
 `
 
 type CreateAccountParams struct {
-	ID           uuid.UUID          `json:"id"`
-	Owner        string             `json:"owner"`
-	Balance      int32              `json:"balance"`
-	CurrencyCode string             `json:"currency_code"`
-	UpdatedAt    pgtype.Timestamptz `json:"updated_at"`
+	ID           uuid.UUID `json:"id"`
+	Owner        uuid.UUID `json:"owner"`
+	Balance      int32     `json:"balance"`
+	CurrencyCode string    `json:"currency_code"`
 }
 
 func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error) {
@@ -32,7 +30,6 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		arg.Owner,
 		arg.Balance,
 		arg.CurrencyCode,
-		arg.UpdatedAt,
 	)
 	var i Account
 	err := row.Scan(
@@ -41,13 +38,12 @@ func (q *Queries) CreateAccount(ctx context.Context, arg CreateAccountParams) (A
 		&i.Balance,
 		&i.CurrencyCode,
 		&i.CreatedAt,
-		&i.UpdatedAt,
 	)
 	return i, err
 }
 
 const listAccounts = `-- name: ListAccounts :many
-SELECT id, owner, balance, currency_code, created_at, updated_at FROM accounts
+SELECT id, owner, balance, currency_code, created_at FROM accounts
 LIMIT $1
 OFFSET $2
 `
@@ -63,7 +59,7 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 		return nil, err
 	}
 	defer rows.Close()
-	var items []Account
+	items := []Account{}
 	for rows.Next() {
 		var i Account
 		if err := rows.Scan(
@@ -72,7 +68,6 @@ func (q *Queries) ListAccounts(ctx context.Context, arg ListAccountsParams) ([]A
 			&i.Balance,
 			&i.CurrencyCode,
 			&i.CreatedAt,
-			&i.UpdatedAt,
 		); err != nil {
 			return nil, err
 		}

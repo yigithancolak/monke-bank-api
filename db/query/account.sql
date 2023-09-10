@@ -1,6 +1,6 @@
 -- name: CreateAccount :one
-INSERT INTO accounts (id, owner, balance, currency_code, updated_at)
-VALUES ($1, $2, $3, $4, $5)
+INSERT INTO accounts (id, owner, balance, currency_code)
+VALUES ($1, $2, $3, $4)
 RETURNING *;
 
 -- name: ListAccounts :many

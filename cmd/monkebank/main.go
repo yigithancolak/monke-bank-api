@@ -3,12 +3,13 @@ package main
 import (
 	"context"
 	"fmt"
-	"net/http"
+	"log"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 	_ "github.com/joho/godotenv/autoload"
+	"github.com/yigithancolak/monke-bank-api/api"
+	db "github.com/yigithancolak/monke-bank-api/db/sqlc"
 )
 
 func main() {
@@ -19,11 +20,19 @@ func main() {
 	}
 	defer dbpool.Close()
 
-	router := gin.Default()
-	router.GET("/accounts", func(ctx *gin.Context) {
-		ctx.JSON(http.StatusOK, gin.H{"data": "hello world"})
+	store := db.New(dbpool)
 
-	})
+	runGinServer(*store)
+}
 
-	router.Run("localhost:8888")
+func runGinServer(store db.Queries) {
+	server, err := api.NewServer(store)
+	if err != nil {
+		log.Fatal("cannot create server")
+	}
+
+	err = server.Start("localhost:8888")
+	if err != nil {
+		log.Fatal("cannot start server")
+	}
 }

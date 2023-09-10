@@ -17,11 +17,10 @@ VALUES
 
 CREATE TABLE accounts (
     id UUID PRIMARY KEY,
-    owner VARCHAR(255) NOT NULL,
+    owner UUID NOT NULL,
     balance INTEGER NOT NULL DEFAULT 0,
     currency_code VARCHAR(3) NOT NULL REFERENCES currencies(code),
-    created_at timestamptz DEFAULT CURRENT_TIMESTAMP,
-    updated_at timestamptz
+    created_at timestamptz DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE entries (
