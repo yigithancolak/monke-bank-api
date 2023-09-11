@@ -15,7 +15,7 @@ var (
 
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
-	UserID    uuid.UUID `json:"username"`
+	UserID    uuid.UUID `json:"user_id"`
 	IssuedAt  time.Time `json:"issued_at"`
 	ExpiredAt time.Time `json:"expired_at"`
 	jwt.Claims
