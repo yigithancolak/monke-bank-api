@@ -6,6 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	db "github.com/yigithancolak/monke-bank-api/db/sqlc"
+	"github.com/yigithancolak/monke-bank-api/token"
 )
 
 type createAccountRequest struct {
@@ -19,9 +20,10 @@ func (server *Server) createAccount(ctx *gin.Context) {
 		return
 	}
 
+	authPayload := ctx.MustGet(authorizationPayloadKey).(*token.Payload)
 	arg := db.CreateAccountParams{
 		ID:           uuid.New(),
-		Owner:        uuid.New(), //will change
+		Owner:        authPayload.UserID,
 		CurrencyCode: req.Currency,
 		Balance:      0,
 	}

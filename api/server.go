@@ -1,6 +1,8 @@
 package api
 
 import (
+	"fmt"
+
 	"github.com/gin-gonic/gin"
 	db "github.com/yigithancolak/monke-bank-api/db/sqlc"
 	"github.com/yigithancolak/monke-bank-api/token"
@@ -24,17 +26,24 @@ func (server *Server) setupRouter() {
 	router.POST("/auth/register", server.createUser)
 	router.POST("/auth/login", server.loginUser)
 
-	router.POST("/accounts", server.createAccount)
+	protectedRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
+	protectedRoutes.POST("/accounts", server.createAccount)
 
 	server.router = router
 }
 
 func NewServer(config util.Config, store db.Queries) (*Server, error) {
 
+	tokenMaker, err := token.NewJWTMaker(config.TokenSymetricKey)
+
+	if err != nil {
+		return nil, fmt.Errorf("err while creating tokenMaker: %v", err)
+	}
+
 	server := &Server{
 		store:      store,
 		config:     config,
-		tokenMaker: &token.JWTMaker{},
+		tokenMaker: tokenMaker,
 	}
 
 	server.setupRouter()

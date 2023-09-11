@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"github.com/google/uuid"
 )
 
 type JWTMaker struct {
@@ -13,7 +14,7 @@ type JWTMaker struct {
 
 const minSecretKeySize = 32
 
-func newJWTMaker(secretKey string) (Maker, error) {
+func NewJWTMaker(secretKey string) (Maker, error) {
 	if len(secretKey) < minSecretKeySize {
 		return nil, fmt.Errorf("invalid key size. must be at leat %d characters", minSecretKeySize)
 	}
@@ -21,8 +22,8 @@ func newJWTMaker(secretKey string) (Maker, error) {
 	return &JWTMaker{secretKey}, nil
 }
 
-func (maker JWTMaker) CreateToken(email string, duration time.Duration) (string, *Payload, error) {
-	payload, err := NewPayload(email, duration)
+func (maker JWTMaker) CreateToken(id uuid.UUID, duration time.Duration) (string, *Payload, error) {
+	payload, err := NewPayload(id, duration)
 
 	if err != nil {
 		return "", payload, err
