@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	_ "github.com/joho/godotenv/autoload"
 	"github.com/yigithancolak/monke-bank-api/api"
 	db "github.com/yigithancolak/monke-bank-api/db/sqlc"
 	"github.com/yigithancolak/monke-bank-api/util"

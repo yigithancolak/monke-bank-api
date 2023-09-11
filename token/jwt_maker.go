@@ -13,7 +13,7 @@ type JWTMaker struct {
 
 const minSecretKeySize = 32
 
-func newJWTMaker(secretKey string) (*JWTMaker, error) {
+func newJWTMaker(secretKey string) (Maker, error) {
 	if len(secretKey) < minSecretKeySize {
 		return nil, fmt.Errorf("invalid key size. must be at leat %d characters", minSecretKeySize)
 	}

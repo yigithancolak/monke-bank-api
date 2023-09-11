@@ -10,6 +10,7 @@ import (
 
 type Querier interface {
 	CreateAccount(ctx context.Context, arg CreateAccountParams) (Account, error)
+	CreateSession(ctx context.Context, arg CreateSessionParams) (Session, error)
 	CreateUser(ctx context.Context, arg CreateUserParams) (User, error)
 	GetUserByEmail(ctx context.Context, email string) (User, error)
 	ListAccounts(ctx context.Context, arg ListAccountsParams) ([]Account, error)

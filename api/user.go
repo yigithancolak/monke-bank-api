@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"time"
 
@@ -71,8 +72,20 @@ type loginUserRequest struct {
 	Password string `json:"password" binding:"required"`
 }
 
+type loginUserResponse struct {
+	SessionId             uuid.UUID    `json:"session_id"`
+	AccessToken           string       `json:"access_token"`
+	AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
+	RefreshToken          string       `json:"refresh_token"`
+	RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
+	User                  userResponse `json:"user"`
+}
+
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
+
+	log.Println("tokenMaker:", server.tokenMaker)
+	log.Println("config:", server.config)
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		ctx.JSON(http.StatusBadRequest, errorResponse(err))
@@ -83,13 +96,54 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	if err != nil {
 		if errors.Is(err, db.ErrRecordNotFound) {
 			ctx.JSON(http.StatusNotFound, errorResponse(err))
+			return
 		}
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
 	}
 
 	err = util.ComparePassword(req.Password, foundUser.Password)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, errorResponse(err))
+		return
 	}
+
+	accessToken, accessPayload, err := server.tokenMaker.CreateToken(req.Email, server.config.AccessTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	refreshToken, refreshPayload, err := server.tokenMaker.CreateToken(req.Email, server.config.RefreshTokenDuration)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
+		ID:           refreshPayload.ID,
+		Email:        refreshPayload.Email,
+		RefreshToken: refreshToken,
+		UserAgent:    ctx.Request.UserAgent(),
+		ClientIp:     ctx.ClientIP(),
+		IsBlocked:    false,
+		ExpiresAt:    refreshPayload.ExpiredAt,
+	})
+
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
+		return
+	}
+
+	resp := loginUserResponse{
+		SessionId:             session.ID,
+		AccessToken:           accessToken,
+		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
+		RefreshToken:          refreshToken,
+		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
+		User:                  createUserResponse(foundUser),
+	}
+
+	ctx.JSON(http.StatusOK, resp)
 
 }
