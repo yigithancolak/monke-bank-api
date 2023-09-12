@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/golang-jwt/jwt/v5"
+	"github.com/golang-jwt/jwt"
 	"github.com/google/uuid"
 )
 
@@ -35,15 +35,17 @@ func (maker JWTMaker) CreateToken(id uuid.UUID, duration time.Duration) (string,
 }
 
 func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
-	keyByteConverter := func(token *jwt.Token) (interface{}, error) {
+
+	keyFunc := func(token *jwt.Token) (interface{}, error) {
 		_, ok := token.Method.(*jwt.SigningMethodHMAC)
 		if !ok {
 			return nil, ErrInvalidToken
 		}
+
 		return []byte(maker.secretKey), nil
 	}
 
-	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyByteConverter)
+	jwtToken, err := jwt.ParseWithClaims(token, &Payload{}, keyFunc)
 	if err != nil {
 		return nil, ErrInvalidToken
 	}

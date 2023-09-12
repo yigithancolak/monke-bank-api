@@ -127,7 +127,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		UserAgent:    ctx.Request.UserAgent(),
 		ClientIp:     ctx.ClientIP(),
 		IsBlocked:    false,
-		ExpiresAt:    refreshPayload.ExpiredAt,
+		ExpiresAt:    time.Unix(refreshPayload.ExpiresAt, 0),
 	})
 
 	if err != nil {
@@ -138,9 +138,9 @@ func (server *Server) loginUser(ctx *gin.Context) {
 	resp := loginUserResponse{
 		SessionId:             session.ID,
 		AccessToken:           accessToken,
-		AccessTokenExpiresAt:  accessPayload.ExpiredAt,
+		AccessTokenExpiresAt:  time.Unix(accessPayload.ExpiresAt, 0),
 		RefreshToken:          refreshToken,
-		RefreshTokenExpiresAt: refreshPayload.ExpiredAt,
+		RefreshTokenExpiresAt: time.Unix(refreshPayload.ExpiresAt, 0),
 		User:                  createUserResponse(foundUser),
 	}
 
