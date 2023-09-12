@@ -55,5 +55,9 @@ func (maker *JWTMaker) VerifyToken(token string) (*Payload, error) {
 		return nil, ErrInvalidToken
 	}
 
+	if payload.ExpiresAt < time.Now().Local().Unix() {
+		return nil, ErrExpiredToken
+	}
+
 	return payload, nil
 }

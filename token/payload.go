@@ -22,6 +22,7 @@ type Payload struct {
 func NewPayload(id uuid.UUID, duration time.Duration) (*Payload, error) {
 
 	payload := &Payload{
+		ID:     uuid.New(),
 		UserID: id,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(duration).Unix(),
