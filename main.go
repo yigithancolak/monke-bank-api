@@ -25,12 +25,12 @@ func main() {
 	}
 	defer dbpool.Close()
 
-	store := db.New(dbpool)
+	store := db.NewStore(dbpool)
 
-	runGinServer(config, *store)
+	runGinServer(config, store)
 }
 
-func runGinServer(config util.Config, store db.Queries) {
+func runGinServer(config util.Config, store db.Store) {
 	server, err := api.NewServer(config, store)
 	if err != nil {
 		log.Fatal("cannot create server")

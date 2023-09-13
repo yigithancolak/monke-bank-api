@@ -10,7 +10,7 @@ import (
 )
 
 type Server struct {
-	store      db.Queries
+	store      db.Store
 	router     *gin.Engine
 	config     util.Config
 	tokenMaker token.Maker
@@ -29,10 +29,12 @@ func (server *Server) setupRouter() {
 	protectedRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 	protectedRoutes.POST("/accounts", server.createAccount)
 
+	protectedRoutes.POST("/transfers", server.createTransfer)
+
 	server.router = router
 }
 
-func NewServer(config util.Config, store db.Queries) (*Server, error) {
+func NewServer(config util.Config, store db.Store) (*Server, error) {
 
 	tokenMaker, err := token.NewJWTMaker(config.TokenSymetricKey)
 
