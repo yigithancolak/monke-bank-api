@@ -23,6 +23,8 @@ jobs:
           POSTGRES_PASSWORD: secret
           POSTGRES_DB: monke_bank
           POSTGRES_USER: postgres
+        ports:
+          - 5432:5432
 
     steps:
       - uses: actions/checkout@v3
