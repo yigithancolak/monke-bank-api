@@ -15,7 +15,7 @@ import (
 func main() {
 	config, err := util.LoadConfig(".")
 	if err != nil {
-		log.Fatal("cannot load config")
+		log.Fatal("cannot load config:", err)
 	}
 
 	dbpool, err := pgxpool.New(context.Background(), config.PostgresURL)

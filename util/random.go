@@ -36,16 +36,16 @@ func RandomOwner() string {
 }
 
 // RandomMoney generates a random amount of money
-func RandomMoney() int64 {
-	return RandomInt(0, 1000)
+func RandomMoney() int32 {
+	return int32(RandomInt(0, 1000))
 }
 
 // RandomCurrency generates a random currency code
-// func RandomCurrency() string {
-// 	currencies := []string{USD, EUR, CAD}
-// 	n := len(currencies)
-// 	return currencies[rand.Intn(n)]
-// }
+func RandomCurrency() string {
+	currencies := []string{"USD", "EUR", "TRY"}
+	n := len(currencies)
+	return currencies[rand.Intn(n)]
+}
 
 // RandomEmail generates a random email
 func RandomEmail() string {
