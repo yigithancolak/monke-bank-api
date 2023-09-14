@@ -13,4 +13,8 @@ migrateup:
 migratedown:
 	migrate -path db/migration -database "postgresql://postgres:secret@localhost:5432/monke_bank?sslmode=disable" -verbose down
 
-.PHONY: postgresrun createdb dropdb migrateup migratedown adminer
+test:
+	go test -v -cover -short ./...
+
+
+.PHONY: postgresrun createdb dropdb migrateup migratedown adminer,test
