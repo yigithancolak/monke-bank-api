@@ -1,0 +1,20 @@
+version: '3.9'
+services:
+  postgres:
+    image: postgres:12-alpine
+    environment:
+      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=monke_bank
+      - POSTGRES_USER=postgres
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - '8888:8888'
+    environment:
+      - POSTGRES_URL=postgresql://postgres:secret@postgres:5432/monke_bank?sslmode=disable
+    depends_on:
+      - postgres
+    entrypoint: ['/app/wait-for.sh', 'postgres:5432', '--', '/app/start.sh']
+    command: ['/app/main']

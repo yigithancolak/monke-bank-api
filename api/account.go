@@ -30,8 +30,6 @@ func (server *Server) createAccount(ctx *gin.Context) {
 
 	account, err := server.store.CreateAccount(ctx, arg)
 	if err != nil {
-		// errCode := db.ErrorCode(err)
-
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
 	}
