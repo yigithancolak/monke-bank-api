@@ -72,13 +72,17 @@ type loginUserRequest struct {
 }
 
 type loginUserResponse struct {
-	SessionId             uuid.UUID    `json:"session_id"`
-	AccessToken           string       `json:"access_token"`
-	AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
-	RefreshToken          string       `json:"refresh_token"`
-	RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
-	User                  userResponse `json:"user"`
+	AccessToken string `json:"access_token"`
 }
+
+// type loginUserResponse struct {
+// 	SessionId             uuid.UUID    `json:"session_id"`
+// 	AccessToken           string       `json:"access_token"`
+// 	AccessTokenExpiresAt  time.Time    `json:"access_token_expires_at"`
+// 	RefreshToken          string       `json:"refresh_token"`
+// 	RefreshTokenExpiresAt time.Time    `json:"refresh_token_expires_at"`
+// 	User                  userResponse `json:"user"`
+// }
 
 func (server *Server) loginUser(ctx *gin.Context) {
 	var req loginUserRequest
@@ -104,7 +108,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	accessToken, accessPayload, err := server.tokenMaker.CreateToken(foundUser.ID, server.config.AccessTokenDuration)
+	accessToken, _, err := server.tokenMaker.CreateToken(foundUser.ID, server.config.AccessTokenDuration)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, errorResponse(err))
 		return
@@ -116,7 +120,7 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	session, err := server.store.CreateSession(ctx, db.CreateSessionParams{
+	_, err = server.store.CreateSession(ctx, db.CreateSessionParams{
 		ID:           refreshPayload.ID,
 		UserID:       refreshPayload.UserID,
 		RefreshToken: refreshToken,
@@ -131,15 +135,27 @@ func (server *Server) loginUser(ctx *gin.Context) {
 		return
 	}
 
-	resp := loginUserResponse{
-		SessionId:             session.ID,
-		AccessToken:           accessToken,
-		AccessTokenExpiresAt:  time.Unix(accessPayload.ExpiresAt, 0),
-		RefreshToken:          refreshToken,
-		RefreshTokenExpiresAt: time.Unix(refreshPayload.ExpiresAt, 0),
-		User:                  createUserResponse(foundUser),
-	}
+	// resp := loginUserResponse{
+	// 	SessionId:             session.ID,
+	// 	AccessToken:           accessToken,
+	// 	AccessTokenExpiresAt:  time.Unix(accessPayload.ExpiresAt, 0),
+	// 	RefreshToken:          refreshToken,
+	// 	RefreshTokenExpiresAt: time.Unix(refreshPayload.ExpiresAt, 0),
+	// 	User:                  createUserResponse(foundUser),
+	// }
 
-	ctx.JSON(http.StatusOK, resp)
+	http.SetCookie(ctx.Writer, &http.Cookie{
+		Name:     "refresh_token",
+		Value:    refreshToken,
+		Expires:  time.Now().Add(server.config.RefreshTokenDuration),
+		Path:     "/",
+		Secure:   util.IsProduction(server.config.Enviroment),
+		HttpOnly: true,
+		SameSite: http.SameSiteStrictMode,
+	})
+
+	ctx.JSON(http.StatusOK, loginUserResponse{
+		AccessToken: accessToken,
+	})
 
 }

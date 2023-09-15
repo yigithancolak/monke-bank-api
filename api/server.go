@@ -25,6 +25,7 @@ func (server *Server) setupRouter() {
 
 	router.POST("/auth/register", server.createUser)
 	router.POST("/auth/login", server.loginUser)
+	router.POST("/auth/renew_token", server.renewAccessToken)
 
 	protectedRoutes := router.Group("/").Use(authMiddleware(server.tokenMaker))
 	protectedRoutes.POST("/accounts", server.createAccount)

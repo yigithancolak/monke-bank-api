@@ -38,3 +38,8 @@ func LoadConfig(path string) (config Config, err error) {
 	return
 
 }
+
+func IsProduction(envVariable string) bool {
+
+	return envVariable == "production"
+}
