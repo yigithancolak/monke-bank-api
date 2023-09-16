@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package pb;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/yigithancolak/monke-bank-api/pb";
+
+message User {
+    string id = 1; //UUID type
+    string email = 2;
+    string full_name = 3;
+    google.protobuf.Timestamp created_at = 4;
+};

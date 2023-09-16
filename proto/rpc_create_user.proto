@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package pb;
+
+
+import "user.proto";
+
+option go_package = "github.com/yigithancolak/monke-bank-api/pb";
+
+message CreateUserRequest {
+    string email = 1;
+    string full_name = 2;
+    string password = 3;
+
+};
+
+message CreateUserResponse {
+    User user = 1;
+}
