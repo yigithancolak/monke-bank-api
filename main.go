@@ -4,12 +4,17 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/yigithancolak/monke-bank-api/api"
 	db "github.com/yigithancolak/monke-bank-api/db/sqlc"
+	"github.com/yigithancolak/monke-bank-api/grpcapi"
+	"github.com/yigithancolak/monke-bank-api/pb"
 	"github.com/yigithancolak/monke-bank-api/util"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 )
 
 func main() {
@@ -27,7 +32,8 @@ func main() {
 
 	store := db.NewStore(dbpool)
 
-	runGinServer(config, store)
+	// runGinServer(config, store)
+	runGrpcServer(config, store)
 }
 
 func runGinServer(config util.Config, store db.Store) {
@@ -40,4 +46,28 @@ func runGinServer(config util.Config, store db.Store) {
 	if err != nil {
 		log.Fatal("cannot start server")
 	}
+}
+
+func runGrpcServer(config util.Config, store db.Store) {
+	server, err := grpcapi.NewServer(config, store)
+	if err != nil {
+		log.Fatal("cannot create server")
+	}
+
+	grpcServer := grpc.NewServer()
+
+	pb.RegisterMonkeBankServer(grpcServer, server)
+	reflection.Register(grpcServer)
+
+	listener, err := net.Listen("tcp", config.GrpcServerAddress)
+	if err != nil {
+		log.Fatal("cannot create listener")
+	}
+
+	log.Printf("Starting grpc server on %s", listener.Addr().String())
+	err = grpcServer.Serve(listener)
+	if err != nil {
+		log.Fatal("cannot start grpc server")
+	}
+
 }
